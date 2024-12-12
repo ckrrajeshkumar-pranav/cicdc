@@ -1,14 +1,28 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = 'your-dockerhub-username/your-image-name'
+        DOCKER_IMAGE = 'ckrrajeshkumar/train-schedule'
     }
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/ckrrajeshkumar-pranav/cicd-pipeline-train-schedule-autodeploy.git', credentialsId: 'github-credentials'
+                git branch: 'main', url: 'https://github.com/ckrrajeshkumar-pranav/cicdc.git', credentialsId: 'github-credentials'
             }
-        }
+        } 
+        stage('Set Executable Permission') {
+            steps {
+                script {
+                    sh 'chmod +x gradlew'  // Ensure gradlew is executable
+                }
+            }
+        } 
+        stage('List Files') {
+            steps {
+                script {
+                    sh 'ls -l'  // Confirm gradlew file is present and executable
+                }
+            }
+        } 
         stage('Build Application') {
             steps {
                 script {
