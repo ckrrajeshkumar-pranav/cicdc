@@ -51,7 +51,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    kubectl config use-context your-cluster-context
+                    kubectl config use-context kubernetes-admin@kubernetes
                     kubectl set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
                     kubectl rollout status deployment/train-schedule
                     """
