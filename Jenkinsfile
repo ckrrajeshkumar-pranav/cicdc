@@ -46,18 +46,18 @@ pipeline {
                     sh 'docker push $DOCKER_IMAGE:$DOCKER_TAG'
                 }
             }
-        }
+        } 
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    sh """
-                    kubectl config use-context kubernetes-admin@kubernetes
-                    kubectl set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
-                    kubectl rollout status deployment/train-schedule
-                    """
+                withKubeConfig(credentialsId: 'kuber') {  // Use the kubeconfig credentials
+                    script {
+                        sh """
+                        kubectl set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
+                        kubectl rollout status deployment/train-schedule
+                        """
+                    }
                 }
             }
         }
     }
 }
-
