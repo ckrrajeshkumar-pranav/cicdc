@@ -52,8 +52,8 @@ pipeline {
                 withCredentials([file(credentialsId: 'kuber', variable: 'KUBECONFIG')]) {  // Use the kubeconfig credentials
                     script {
                         sh """
-                        kubectl set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
-                        kubectl rollout status deployment/train-schedule
+                        kubectl --kubeconfig $KUBECONFIG  set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
+                        kubectl --kubeconfig $KUBECONFIG  rollout status deployment/train-schedule
                         """
                     }
                 }
