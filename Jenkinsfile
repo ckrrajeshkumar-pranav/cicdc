@@ -51,6 +51,13 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kube', variable: 'KUBECONFIG')]) {  // Use the kubeconfig credentials
                     script {
+                        // Apply Kubernetes manifests
+                        sh """
+                        kubectl --kubeconfig $KUBECONFIG apply -f k8s/deployment.yaml
+                        kubectl --kubeconfig $KUBECONFIG apply -f k8s/service.yaml
+                        """
+
+                // Set the image for the deployment
                         sh """
                         kubectl --kubeconfig $KUBECONFIG  set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
                         kubectl --kubeconfig $KUBECONFIG  rollout status deployment/train-schedule
