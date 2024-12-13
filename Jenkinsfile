@@ -49,7 +49,7 @@ pipeline {
         } 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'kuber', variable: 'KUBECONFIG')]) {  // Use the kubeconfig credentials
+                withCredentials([file(credentialsId: 'kube', variable: 'KUBECONFIG')]) {  // Use the kubeconfig credentials
                     script {
                         sh """
                         kubectl --kubeconfig $KUBECONFIG  set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
