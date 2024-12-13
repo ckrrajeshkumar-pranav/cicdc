@@ -60,7 +60,7 @@ pipeline {
                 // Set the image for the deployment
                         sh """
                         kubectl --kubeconfig $KUBECONFIG  set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
-                        kubectl --kubeconfig $KUBECONFIG  rollout status deployment/train-schedule
+                        kubectl --kubeconfig $KUBECONFIG  rollout status deployment/train-schedule || exit 1
                         """
                     }
                 }
