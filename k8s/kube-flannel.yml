@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-flannel-cfg
+  namespace: kube-system
+data:
+  flannel.conf: |
+    [Network]
+    Name = flannel
+    SubnetFile = /run/flannel/subnet.env
+    Backend = vxlan
+    VNI = 1
+    ...
+

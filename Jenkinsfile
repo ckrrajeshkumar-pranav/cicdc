@@ -2,32 +2,17 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = 'ckrrajeshkumar/train-schedule'
+        KUBE_NAMESPACE = 'default'  // Change if using a different namespace
     }
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/ckrrajeshkumar-pranav/cicdc.git', credentialsId: 'github-credentials'
             }
-        } 
-        stage('Set Executable Permission') {
-            steps {
-                script {
-                    sh 'chmod +x gradlew'  // Ensure gradlew is executable
-                }
-            }
-        } 
-        stage('List Files') {
-            steps {
-                script {
-                    sh 'ls -l'  // Confirm gradlew file is present and executable
-                }
-            }
-        } 
+        }
         stage('Build Application') {
             steps {
-                script {
-                    sh './gradlew build --no-daemon'
-                }
+                sh './gradlew build --no-daemon'
             }
         }
         stage('Build Docker Image') {
@@ -36,7 +21,7 @@ pipeline {
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     env.DOCKER_TAG = "${commitHash}"
                 }
-                sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG .'
+                sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG -t $DOCKER_IMAGE:latest .'
             }
         }
         stage('Push to Docker Hub') {
@@ -44,23 +29,19 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                     sh 'docker push $DOCKER_IMAGE:$DOCKER_TAG'
+                    sh 'docker push $DOCKER_IMAGE:latest'
                 }
             }
-        } 
+        }
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'kube', variable: 'KUBECONFIG')]) {  // Use the kubeconfig credentials
+                withCredentials([file(credentialsId: 'kube', variable: 'KUBECONFIG')]) {
                     script {
-                        // Apply Kubernetes manifests
                         sh """
                         kubectl --kubeconfig $KUBECONFIG apply -f k8s/deployment.yaml
                         kubectl --kubeconfig $KUBECONFIG apply -f k8s/service.yaml
-                        """
-
-                // Set the image for the deployment
-                        sh """
-                        kubectl --kubeconfig $KUBECONFIG  set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
-                        kubectl --kubeconfig $KUBECONFIG  rollout status deployment/train-schedule || exit 1
+                        kubectl --kubeconfig $KUBECONFIG set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
+                        kubectl --kubeconfig $KUBECONFIG rollout status deployment/train-schedule -n $KUBE_NAMESPACE || exit 1
                         """
                     }
                 }
@@ -68,3 +49,4 @@ pipeline {
         }
     }
 }
+
