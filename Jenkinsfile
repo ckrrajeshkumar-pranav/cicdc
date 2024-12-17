@@ -38,8 +38,8 @@ pipeline {
                 withCredentials([file(credentialsId: 'kube', variable: 'KUBECONFIG')]) {
                     script {
                         sh """
-                        kubectl --kubeconfig $KUBECONFIG --insecure-skip-tls-verify apply apply -f k8s/deployment.yaml
-                        kubectl --kubeconfig $KUBECONFIG --insecure-skip-tls-verify apply apply -f k8s/service.yaml
+                        kubectl --kubeconfig $KUBECONFIG --insecure-skip-tls-verify apply -f k8s/deployment.yaml
+                        kubectl --kubeconfig $KUBECONFIG --insecure-skip-tls-verify apply -f k8s/service.yaml
                         kubectl --kubeconfig $KUBECONFIG --insecure-skip-tls-verify apply set image deployment/train-schedule train-schedule=$DOCKER_IMAGE:$DOCKER_TAG
                         kubectl --kubeconfig $KUBECONFIG --insecure-skip-tls-verify apply rollout status deployment/train-schedule -n $KUBE_NAMESPACE || exit 1
                         """
